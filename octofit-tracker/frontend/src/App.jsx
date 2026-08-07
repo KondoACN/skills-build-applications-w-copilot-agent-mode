@@ -1,6 +1,29 @@
-import './App.css'
+import { useEffect, useState } from 'react';
+import './App.css';
+import { fetchJson } from './api';
 
 function App() {
+  const [users, setUsers] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [usersData, activitiesData] = await Promise.all([
+          fetchJson('/api/users'),
+          fetchJson('/api/activities'),
+        ]);
+        setUsers(usersData);
+        setActivities(activitiesData);
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+
+    loadData();
+  }, []);
+
   return (
     <main className="container py-5">
       <section className="row align-items-center g-4">
@@ -24,6 +47,11 @@ function App() {
                 <li className="list-group-item px-0">Express + TypeScript backend</li>
                 <li className="list-group-item px-0">MongoDB-ready data layer</li>
               </ul>
+              {error ? <p className="text-danger mt-3">{error}</p> : null}
+              <div className="mt-3">
+                <p className="fw-semibold mb-2">Users: {users.length}</p>
+                <p className="fw-semibold mb-0">Activities: {activities.length}</p>
+              </div>
             </div>
           </div>
         </div>
