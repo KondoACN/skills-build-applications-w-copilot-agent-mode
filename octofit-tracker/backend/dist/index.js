@@ -1,22 +1,23 @@
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
+import apiRoutes from './routes/api';
+import { connectDatabase } from './config/database';
 const app = express();
-const port = 8000;
+const port = Number(process.env.PORT ?? 8000);
 app.use(cors());
 app.use(express.json());
-app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok' });
+app.use('/api', apiRoutes);
+app.get('/', (_req, res) => {
+    res.json({ message: 'OctoFit backend is running' });
 });
-const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/octofit_db';
-mongoose.connect(mongoUri)
+connectDatabase()
     .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(port, () => {
-        console.log(`Backend listening on port ${port}`);
-    });
+    console.log('Database connection ready');
 })
     .catch((error) => {
-    console.error('MongoDB connection failed', error);
-    process.exit(1);
+    console.warn('MongoDB connection unavailable, continuing without database persistence', error);
 });
+app.listen(port, () => {
+    console.log(`Backend listening on port ${port}`);
+});
+export { app, port };
