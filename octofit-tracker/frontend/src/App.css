@@ -1,0 +1,154 @@
+/* OctoFit Tracker App Styles */
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Layout */
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.min-vh-100 {
+  min-height: 100vh;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+/* Navigation Styling */
+.navbar-brand {
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.nav-link {
+  position: relative;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #667eea !important;
+}
+
+.nav-link.active {
+  color: #667eea !important;
+}
+
+/* Card Styling */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-color: #e0e0e0;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Table Styling */
+.table-hover tbody tr:hover {
+  background-color: rgba(102, 126, 234, 0.08);
+}
+
+.table-light {
+  background-color: #f8f9fa;
+}
+
+/* Button Styling */
+.btn-primary {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-primary:hover {
+  background-color: #5568d3;
+  border-color: #5568d3;
+}
+
+.btn-outline-primary {
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-outline-primary:hover {
+  background-color: #667eea;
+  border-color: #667eea;
+  color: #fff;
+}
+
+/* Badge Styling */
+.badge {
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+}
+
+/* Gradient Background */
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem 0;
+}
+
+/* Stats Section */
+.stats-section {
+  padding: 2rem 0;
+  background-color: #f8f9fa;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 2rem;
+}
+
+.stat-card h3 {
+  color: #667eea;
+  font-weight: 700;
+}
+
+/* Form Styling */
+.form-control:focus,
+.form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  .display-4 {
+    font-size: 2rem;
+  }
+
+  .display-5 {
+    font-size: 1.5rem;
+  }
+}
