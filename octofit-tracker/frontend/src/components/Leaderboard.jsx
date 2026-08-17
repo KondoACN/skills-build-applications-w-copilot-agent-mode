@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react';
-import { fetchJson } from '../api';
 
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const leaderboardApiUrl = import.meta.env.VITE_CODESPACE_NAME
+    ? `https://${import.meta.env.VITE_CODESPACE_NAME}-8000.app.github.dev/api/leaderboard`
+    : 'http://localhost:8000/api/leaderboard';
+
   useEffect(() => {
     async function loadLeaderboard() {
       try {
         setLoading(true);
-        const data = await fetchJson('/api/leaderboard');
-        // Handle both array and paginated responses
+        const response = await fetch(leaderboardApiUrl);
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
         setLeaderboard(Array.isArray(data) ? data : data.data || data.leaderboard || []);
         setError('');
       } catch (err) {
@@ -22,7 +30,7 @@ export default function Leaderboard() {
     }
 
     loadLeaderboard();
-  }, []);
+  }, [leaderboardApiUrl]);
 
   if (loading) return <div className="alert alert-info">Loading leaderboard...</div>;
   if (error) return <div className="alert alert-danger" role="alert">{error}</div>;

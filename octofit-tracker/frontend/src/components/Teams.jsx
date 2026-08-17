@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { fetchJson, getApiBaseUrl } from '../api';
 
 export default function Teams() {
   const [teams, setTeams] = useState([]);
@@ -11,12 +10,21 @@ export default function Teams() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const teamsApiUrl = import.meta.env.VITE_CODESPACE_NAME
+    ? `https://${import.meta.env.VITE_CODESPACE_NAME}-8000.app.github.dev/api/teams`
+    : 'http://localhost:8000/api/teams';
+
   useEffect(() => {
     async function loadTeams() {
       try {
         setLoading(true);
-        const data = await fetchJson('/api/teams');
-        // Handle both array and paginated responses
+        const response = await fetch(teamsApiUrl);
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
         setTeams(Array.isArray(data) ? data : data.data || data.teams || []);
         setError('');
       } catch (err) {
@@ -27,13 +35,13 @@ export default function Teams() {
     }
 
     loadTeams();
-  }, []);
+  }, [teamsApiUrl]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -41,19 +49,16 @@ export default function Teams() {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      const response = await fetch(
-        `${getApiBaseUrl()}/api/teams`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        }
-      );
+      const response = await fetch(teamsApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) throw new Error('Failed to create team');
 
       const newTeam = await response.json();
-      setTeams([...teams, newTeam]);
+      setTeams((current) => [...current, newTeam]);
       setFormData({ name: '', description: '' });
       setError('');
     } catch (err) {

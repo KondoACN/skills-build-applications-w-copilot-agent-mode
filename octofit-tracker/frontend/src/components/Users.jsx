@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { fetchJson } from '../api';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -12,12 +11,21 @@ export default function Users() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const usersApiUrl = import.meta.env.VITE_CODESPACE_NAME
+    ? `https://${import.meta.env.VITE_CODESPACE_NAME}-8000.app.github.dev/api/users`
+    : 'http://localhost:8000/api/users';
+
   useEffect(() => {
     async function loadUsers() {
       try {
         setLoading(true);
-        const data = await fetchJson('/api/users');
-        // Handle both array and paginated responses
+        const response = await fetch(usersApiUrl);
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
         setUsers(Array.isArray(data) ? data : data.data || data.users || []);
         setError('');
       } catch (err) {
@@ -28,13 +36,13 @@ export default function Users() {
     }
 
     loadUsers();
-  }, []);
+  }, [usersApiUrl]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -42,21 +50,16 @@ export default function Users() {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      const response = await fetch(
-        new URL('/api/users', window.location.origin).href.replace(window.location.origin, '') !== '/'
-          ? new URL('/api/users', window.location.origin).href
-          : `${getApiBaseUrl()}/api/users`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        }
-      );
+      const response = await fetch(usersApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) throw new Error('Failed to create user');
 
       const newUser = await response.json();
-      setUsers([...users, newUser]);
+      setUsers((current) => [...current, newUser]);
       setFormData({ name: '', email: '', role: 'student' });
       setError('');
     } catch (err) {

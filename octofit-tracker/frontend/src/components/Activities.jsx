@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { fetchJson, getApiBaseUrl } from '../api';
 
 export default function Activities() {
   const [activities, setActivities] = useState([]);
@@ -15,12 +14,21 @@ export default function Activities() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const activitiesApiUrl = import.meta.env.VITE_CODESPACE_NAME
+    ? `https://${import.meta.env.VITE_CODESPACE_NAME}-8000.app.github.dev/api/activities`
+    : 'http://localhost:8000/api/activities';
+
   useEffect(() => {
     async function loadActivities() {
       try {
         setLoading(true);
-        const data = await fetchJson('/api/activities');
-        // Handle both array and paginated responses
+        const response = await fetch(activitiesApiUrl);
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
         setActivities(Array.isArray(data) ? data : data.data || data.activities || []);
         setError('');
       } catch (err) {
@@ -31,7 +39,7 @@ export default function Activities() {
     }
 
     loadActivities();
-  }, []);
+  }, [activitiesApiUrl]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -39,7 +47,7 @@ export default function Activities() {
       ...prev,
       [name]: name === 'durationMinutes' || name === 'caloriesBurned' || name === 'distanceKm'
         ? value === '' ? '' : Number(value)
-        : value
+        : value,
     }));
   };
 
@@ -47,19 +55,16 @@ export default function Activities() {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      const response = await fetch(
-        `${getApiBaseUrl()}/api/activities`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        }
-      );
+      const response = await fetch(activitiesApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) throw new Error('Failed to create activity');
 
       const newActivity = await response.json();
-      setActivities([newActivity, ...activities]);
+      setActivities((current) => [newActivity, ...current]);
       setFormData({
         userId: '',
         type: '',

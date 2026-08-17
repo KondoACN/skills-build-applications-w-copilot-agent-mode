@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { fetchJson, getApiBaseUrl } from '../api';
 
 export default function Workouts() {
   const [workouts, setWorkouts] = useState([]);
@@ -13,12 +12,21 @@ export default function Workouts() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const workoutsApiUrl = import.meta.env.VITE_CODESPACE_NAME
+    ? `https://${import.meta.env.VITE_CODESPACE_NAME}-8000.app.github.dev/api/workouts`
+    : 'http://localhost:8000/api/workouts';
+
   useEffect(() => {
     async function loadWorkouts() {
       try {
         setLoading(true);
-        const data = await fetchJson('/api/workouts');
-        // Handle both array and paginated responses
+        const response = await fetch(workoutsApiUrl);
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
         setWorkouts(Array.isArray(data) ? data : data.data || data.workouts || []);
         setError('');
       } catch (err) {
@@ -29,13 +37,13 @@ export default function Workouts() {
     }
 
     loadWorkouts();
-  }, []);
+  }, [workoutsApiUrl]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -45,22 +53,19 @@ export default function Workouts() {
       setIsSubmitting(true);
       const workoutData = {
         ...formData,
-        exercises: formData.exercises.split(',').map(ex => ex.trim()).filter(Boolean)
+        exercises: formData.exercises.split(',').map(ex => ex.trim()).filter(Boolean),
       };
 
-      const response = await fetch(
-        `${getApiBaseUrl()}/api/workouts`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(workoutData)
-        }
-      );
+      const response = await fetch(workoutsApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(workoutData),
+      });
 
       if (!response.ok) throw new Error('Failed to create workout');
 
       const newWorkout = await response.json();
-      setWorkouts([...workouts, newWorkout]);
+      setWorkouts((current) => [...current, newWorkout]);
       setFormData({
         name: '',
         description: '',
